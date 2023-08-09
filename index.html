@@ -9,7 +9,11 @@
 </head>
 
 <body>
-    <input type="file" id="imageInput" accept="image/*">
+    <div class="container">
+        <input type="file" id="imageInput" accept="image/*">
+        <input type="range" id="valueSlider" min="2" max="10" step="1" value="2">
+        <p id="valueDisplay">Value:</p><input placeholder="">
+    </div>
     <div id="imageContainer"></div>
     <script src="script.js"></script>
 </body>

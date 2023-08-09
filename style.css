@@ -2,3 +2,7 @@
     display: grid;
 }
 
+.image-item {
+    margin-top: -4px;
+    background-color: white;
+}
