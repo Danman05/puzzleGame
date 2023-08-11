@@ -1,15 +1,19 @@
+import { getData } from "./dataContext.js";
 // html elements
 const valueSlider = document.getElementById('valueSlider');
 const valueDisplay = document.getElementById('valueDisplay');
 const imageInput = document.getElementById('imageInput');
 const imageContainer = document.getElementById('imageContainer');
-
+const imageHeader = document.getElementById('imageHeader');
+let dbData;
 // Variables
 let GRID_SIZE = valueSlider.value;
 const GRID_PIECES = GRID_SIZE ** 2;
 let imageArray = [GRID_PIECES];
 let chosenImageOne;
 let chosenImageTwo;
+
+displayData();
 
 // Event listeners
 imageInput.addEventListener('change', handleImageUpload);
@@ -18,31 +22,28 @@ valueSlider.addEventListener('input', function () {
     GRID_SIZE = valueSlider.value;
     valueDisplay.textContent = `Value: ${GRID_SIZE}`;
 });
-function applyEventListener(imageItem) {
-    imageItem.addEventListener('click', function (event) {
 
-
-        if (!chosenImageOne) {
-            chosenImageOne = event.currentTarget.id;
-        }
-        else if (!chosenImageTwo) {
-            chosenImageTwo = event.currentTarget.id;
-        }
-        if (chosenImageOne && chosenImageTwo) {
-            const indexOne = imageArray.findIndex(image => image.id === chosenImageOne);
-            const indexTwo = imageArray.findIndex(image => image.id === chosenImageTwo);
-
-            [imageArray[indexOne], imageArray[indexTwo]] = [imageArray[indexTwo], imageArray[indexOne]]; // Swap elements
-
-            chosenImageOne = null;
-            chosenImageTwo = null;
-            paintImage(imageArray);
-        }
+async function displayData() {
+    dbData = await getData();
+    dbData.forEach(element => {
+        const image = document.createElement('img');
+        image.src = element['imgBase64'];
+        image.id = 'dbImages';
+        image.addEventListener('click', function(event) {
+            const image = new Image();
+            image.src = event.currentTarget.src;
+            image.onload = function () {
+                sliceAndDisplayImage(image);
+            };
+        });
+        imageHeader.appendChild(image);
     });
 }
 
 function handleImageUpload(event) {
+    console.log("handeling image upload");
     imageContainer.innerHTML = '';
+    imageArray = [];
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
@@ -53,11 +54,10 @@ function handleImageUpload(event) {
                 sliceAndDisplayImage(image);
             };
         };
+        imageInput.value = '';
         reader.readAsDataURL(file);
     }
 }
-
-
 
 function sliceAndDisplayImage(image) {
 
@@ -84,7 +84,6 @@ function sliceAndDisplayImage(image) {
             imageItem.classList.add('image-item');
             applyEventListener(imageItem);
 
-
             const canvas = document.createElement('canvas');
             var scale = 1;
             canvas.style.width = pieceSizeWidth + 'px';
@@ -97,7 +96,6 @@ function sliceAndDisplayImage(image) {
             currentPieceWidth += pieceSizeWidth;
             imageItem.appendChild(canvas);
             imageArray[imageId] = imageItem;
-
             imageId++;
         }
         currentPieceHeight += pieceSizeHeight;
@@ -116,10 +114,46 @@ function mixImageArray() {
 }
 
 function paintImage() {
-    
+
     imageContainer.innerHTML = '';
     for (let i = 0; i < imageArray.length; i++) {
         imageContainer.appendChild(imageArray[i]);
 
+    }
+}
+
+function applyEventListener(imageItem) {
+    imageItem.addEventListener('click', function (event) {
+        
+        if (!chosenImageOne) {
+            chosenImageOne = event.currentTarget.id;
+        }
+        else if (!chosenImageTwo) {
+            chosenImageTwo = event.currentTarget.id;
+        }
+        if (chosenImageOne && chosenImageTwo) {
+            const indexOne = imageArray.findIndex(image => image.id === chosenImageOne);
+            const indexTwo = imageArray.findIndex(image => image.id === chosenImageTwo);
+            
+            [imageArray[indexOne], imageArray[indexTwo]] = [imageArray[indexTwo], imageArray[indexOne]]; // Swap elements
+            
+            checkMove(indexOne, indexTwo, event);
+            paintImage(imageArray);
+            chosenImageOne = null;
+            chosenImageTwo = null;
+        }
+    });
+}
+
+function checkMove(arrayPosOne, arrayPosTwo, event) {
+    paintImage();
+    console.log(arrayPosOne + "and" + chosenImageOne);
+    console.log(arrayPosTwo +"and" + chosenImageTwo);
+    if (chosenImageOne == arrayPosTwo) {
+        // matched a piece
+    }
+
+    if (chosenImageTwo == arrayPosOne) {
+        // matched  a a piece
     }
 }
